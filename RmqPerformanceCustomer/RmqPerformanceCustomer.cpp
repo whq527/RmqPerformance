@@ -2,14 +2,14 @@
 //
 
 #include "pch.h"
+#include <windows.h>
 #include <iostream>
-#include <SocketThread.h>
 #include <mutex>
 #include <map>
-#include "cpack.h"
-#include "ClibRmq.h"
 #include <time.h>
 #include <iomanip>
+#include "cpack.h"
+#include "ClibRmq.h"
 
 using namespace std;
 
@@ -33,47 +33,8 @@ std::condition_variable g_cv;
 deque<st_cpack> g_recv_list;
 map<string, st_info> g_recv_info;
 
-void __stdcall OnRMQTradeData(st_msg* msg)
-{
-	st_cpack one = { 0 };
-	memcpy(&one, msg->data, sizeof(st_cpack));
-	strncpy_s(one.head.hook.hostname, msg->routekey, msg->routekeylen);//订阅的key
-	one.pack.lvol0 = one.head.userdata;//包放入队列的时间
-	strncpy_s(one.pack.vsvarstr3, msg->exchange, msg->exchangelen);//exchange
-	unique_lock<mutex> ulk(g_mtx);
-	g_recv_list.push_back(one);
-	g_cv.notify_all();
-}
-
-TSocketThread g_rmq;
-void test_by_SocketThread(const char* _key, const char* _ip, const char* _exchange, const char* _type)
-{
-	g_rmq.Init(_ip, 5672, _exchange, _type, false, true, OnRMQTradeData);
-	g_rmq.bindkey(_key);
-	g_rmq.bindkey(_key, "test2");
-	g_rmq.Start();
-	printf("SocketThread customer ok\n");
-}
-
 void __stdcall OnRMQData(st_rmq_msg* msg)
 {
-	//static int count = 0;
-	//count++;
-	//static ULONGLONG tk = GetTickCount64();
-	//if (GetTickCount64() - tk >= 1000)
-	//{
-	//	struct tm now_time;
-	//	localtime_s(&now_time, &msg->timestamp);
-	//	if (msg->content.bytes != nullptr)
-	//	{
-	//		ST_CPACK *one = (st_cpack*)msg->content.bytes;
-	//		cout << "Recv " << msg->routekey << " " << count << " Hz lastest "
-	//			<< std::put_time(&now_time, "%F %T") << " " << one->head.RequestType << " " << one->head.retCode << " " << one->pack.vsvarstr0 << " " << msg->content_encoding << endl;
-	//	}
-	//	tk = GetTickCount64();
-	//	count = 0;
-	//}
-	//return;
 	st_cpack one = { 0 };
 	memcpy(&one, msg->content.bytes, msg->content.len);
 
@@ -91,6 +52,7 @@ void test_by_librmq(const char* _key, const char* _user, const char* _psw, const
 {
 	if (g_rmq2.Init(_user, _psw, _ip, 5672, _exchange, _type, 1, 0, true, OnRMQData, _queue, _consumer))
 	{
+		printf("librmq connect %s ok\n", _ip);
 		g_rmq2.Get_Bind(_key);
 		//g_rmq2.Get_Bind(_key, "test2");
 		g_rmq2.Start();
@@ -100,21 +62,13 @@ void test_by_librmq(const char* _key, const char* _user, const char* _psw, const
 
 int main(int argc, char*argv[])
 {
-	if (argc == 6 || argc == 10)
+	if (argc == 9)
 	{
-		if (atoi(argv[1]) == 1)
-		{
-			test_by_SocketThread(argv[2], argv[3], argv[4], argv[5]);
-		}
-		else if (atoi(argv[1]) == 2)
-		{
-			test_by_librmq(argv[2], argv[3], argv[4], argv[5], argv[6], argv[7], argv[8], argv[9]);
-		}
+		test_by_librmq(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7], argv[8]);
 	}
 	else
 	{
-		test_by_SocketThread("#", "10.10.101.35", "test", "topic");
-		//test_by_librmq("#", "client", "client", "10.10.101.35", "test", "topic", "queue-1", "c-recv");
+		test_by_librmq("#", "client", "client", "192.168.3.200", "test", "topic", "queue-1", "c-recv");
 	}
 
 	ULONGLONG tk = GetTickCount64();

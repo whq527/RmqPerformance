@@ -1,0 +1,20 @@
+﻿################################################################################
+# 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
+################################################################################
+
+/Debug
+RmqPerformanceCustomer/x64/
+RmqPerformanceCustomer/Debug/
+RmqPerformanceCustomer/Release/
+RmqPerformanceProduct/x64/
+RmqPerformanceProduct/Debug/
+RmqPerformanceProduct/Release/
+.vs/
+Release/RmqPerformanceCustomer.exe
+Release/RmqPerformanceCustomer.pdb
+Release/RmqPerformanceCustomer.iobj
+Release/RmqPerformanceCustomer.ipdb
+Release/RmqPerformanceProduct.exe
+Release/RmqPerformanceProduct.iobj
+Release/RmqPerformanceProduct.ipdb
+Release/RmqPerformanceProduct.pdb
