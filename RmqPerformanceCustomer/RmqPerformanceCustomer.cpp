@@ -38,10 +38,10 @@ void __stdcall OnRMQData(st_rmq_msg* msg)
 	st_cpack one = { 0 };
 	memcpy(&one, msg->content.bytes, msg->content.len);
 
-	strcpy_s(one.head.hook.hostname, msg->routekey.c_str());//订阅的key
+	strcpy_s(one.head.hook.hostname, msg->header.routekey.c_str());//订阅的key
 	//one.pack.lvol0 = msg->timestamp;//包发送的时间
 	one.pack.lvol0 = one.head.userdata;//包放入队列的时间
-	strcpy_s(one.pack.vsvarstr3, msg->exchange.c_str());//exchange
+	strcpy_s(one.pack.vsvarstr3, msg->header.exchange.c_str());//exchange
 	unique_lock<mutex> ulk(g_mtx);
 	g_recv_list.push_back(one);
 	g_cv.notify_all();
