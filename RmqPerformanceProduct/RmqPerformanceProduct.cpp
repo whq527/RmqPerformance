@@ -39,20 +39,21 @@ void test_by_librmq(const char* _key, long _count, long _rate, int _delay, const
 			printf("%s %s 发 %ld 条 循环延迟%d秒 start\n", time, _key, _count, _delay / 1000);
 			for (size_t i = 1; i <= _count; i++)
 			{
-				int sizea = sizeof(ST_CPACK);
-				ST_CPACK one = { 0 };
-				one.head.retCode = _count;
-				one.head.recCount = i;
-				one.head.RequestType = 1123;
-				auto tp2 = std::chrono::system_clock::now();
-				one.head.userdata = std::chrono::system_clock::to_time_t(tp2);//包放入队列的时间
-				strcpy_s(one.pack.vsvarstr0, "my msg");
+				//int sizea = sizeof(ST_CPACK);
+				//ST_CPACK one = { 0 };
+				//one.head.retCode = _count;
+				//one.head.recCount = i;
+				//one.head.RequestType = 1123;
+				//auto tp2 = std::chrono::system_clock::now();
+				//one.head.userdata = std::chrono::system_clock::to_time_t(tp2);//包放入队列的时间
+				//strcpy_s(one.pack.vsvarstr0, "my msg");
+				string str = "哈哈哈";
 				st_rmq_msg_header header;
 				header.type = "msg";
 				header.id = "123";
-				header.struct_name = "ST_CPACK";
+				header.struct_name = "string";
 				header.routekey = _key;
-				rmq.Push_Msg((void*)&one, sizeof(ST_CPACK), &header);
+				rmq.Push_Msg((void*)str.data(), str.length(), &header);
 			}
 			first = false;
 			tp = std::chrono::system_clock::now();
